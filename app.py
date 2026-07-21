@@ -3,6 +3,7 @@ import secrets
 import uuid
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify
+from translations import SAFETY_GUIDELINES
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", secrets.token_hex(32))
@@ -40,6 +41,13 @@ def index():
     return render_template("index.html", languages=INDIAN_LANGUAGES)
 
 
+@app.route("/api/translations", methods=["GET"])
+def get_translations():
+    lang = request.args.get("lang", "en")
+    guidelines = SAFETY_GUIDELINES.get(lang, SAFETY_GUIDELINES["en"])
+    return jsonify({"lang": lang, "guidelines": guidelines})
+
+
 @app.route("/api/register", methods=["POST"])
 def register():
     data = request.get_json()
@@ -49,6 +57,7 @@ def register():
     name = data.get("name", "").strip()
     gov_id = data.get("gov_id", "").strip()
     language = data.get("language", "en")
+    visitor_type = data.get("visitor_type", "visitor")
 
     if not name:
         return jsonify({"error": "Name is required"}), 400
@@ -59,15 +68,19 @@ def register():
     if len(gov_id) > 50:
         return jsonify({"error": "ID number is too long"}), 400
 
-    valid_codes = {l["code"] for l in INDIAN_LANGUAGES}
+    valid_codes = {lang["code"] for lang in INDIAN_LANGUAGES}
     if language not in valid_codes:
         return jsonify({"error": "Invalid language selection"}), 400
+
+    if visitor_type not in ("visitor", "driver"):
+        return jsonify({"error": "visitor_type must be 'visitor' or 'driver'"}), 400
 
     reg_id = str(uuid.uuid4())[:8].upper()
     REGISTRATIONS[reg_id] = {
         "name": name,
         "gov_id": gov_id,
         "language": language,
+        "visitor_type": visitor_type,
         "registered_at": datetime.now().isoformat(),
     }
 
@@ -76,6 +89,7 @@ def register():
         "reg_id": reg_id,
         "name": name,
         "language": language,
+        "visitor_type": visitor_type,
     })
 
 

@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
 </head>
 <body>
     <button id="fullscreen-exit" class="fullscreen-exit hidden" onclick="exitFullscreen()" title="Exit Full Screen">
@@ -25,7 +26,7 @@
 
     <div id="progress-container" class="progress-container">
         <div class="progress-track">
-            <div id="progress-bar" class="progress-bar" style="width: 33%"></div>
+            <div id="progress-bar" class="progress-bar" style="width: 16%"></div>
         </div>
         <div class="progress-steps">
             <div class="progress-step active" data-step="1">
@@ -38,7 +39,19 @@
             </div>
             <div class="progress-step" data-step="3">
                 <div class="step-circle">3</div>
-                <span class="step-label">Complete</span>
+                <span class="step-label">Safety</span>
+            </div>
+            <div class="progress-step" data-step="4">
+                <div class="step-circle">4</div>
+                <span class="step-label">Declaration</span>
+            </div>
+            <div class="progress-step" data-step="5">
+                <div class="step-circle">5</div>
+                <span class="step-label">Photo</span>
+            </div>
+            <div class="progress-step" data-step="6">
+                <div class="step-circle">6</div>
+                <span class="step-label">Pass</span>
             </div>
         </div>
     </div>
@@ -132,6 +145,39 @@
                     <span class="form-hint">Enter your Aadhaar, PAN, Voter ID, or Passport number</span>
                 </div>
 
+                <div class="form-group">
+                    <label class="form-label" for="visitor-type">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        <span id="visitor-type-label">Visitor Type</span>
+                    </label>
+                    <div class="visitor-type-group">
+                        <label class="visitor-type-option" id="vt-visitor-option" data-value="visitor" onclick="selectVisitorType(this)">
+                            <input type="radio" name="visitor-type" value="visitor" checked>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <span id="visitor-type-visitor">Visitor</span>
+                        </label>
+                        <label class="visitor-type-option" id="vt-driver-option" data-value="driver" onclick="selectVisitorType(this)">
+                            <input type="radio" name="visitor-type" value="driver">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="14" height="10" x="5" y="7" rx="2"/>
+                                <path d="M12 7V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3"/>
+                                <path d="M19 17v2a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-2"/>
+                                <circle cx="9" cy="15" r="1"/>
+                                <circle cx="15" cy="15" r="1"/>
+                            </svg>
+                            <span id="visitor-type-driver">Logistics Driver</span>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="selected-language-display" id="selected-lang-display">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10"/>
@@ -162,42 +208,226 @@
 
     <section id="screen-3" class="screen">
         <div class="screen-content">
-            <div class="completion-section">
-                <div class="success-animation">
-                    <div class="success-circle">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 6 9 17l-5-5" class="checkmark-path"/>
+            <div class="form-header">
+                <div class="form-header-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                </div>
+                <h2 class="form-title" id="safety-title">Safety Guidelines for Visitors</h2>
+                <p class="form-subtitle" id="safety-subtitle">Please read and listen carefully to the following safety rules</p>
+            </div>
+
+            <div class="narration-controls">
+                <button class="btn btn-secondary btn-sm" id="narration-toggle-btn" onclick="toggleNarration()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                    </svg>
+                    <span id="narration-btn-text">Play Narration</span>
+                </button>
+                <div class="narration-status" id="narration-status">Ready</div>
+            </div>
+
+            <div class="safety-rules-container" id="safety-rules-list">
+            </div>
+
+            <div class="screen-actions" style="margin-top: 24px;">
+                <button class="btn btn-secondary" onclick="goToScreen(2)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5m7-7-7 7 7 7"/>
+                    </svg>
+                    <span>Back</span>
+                </button>
+                <button class="btn btn-primary" id="continue-to-declaration-btn" onclick="goToDeclaration()" disabled>
+                    <span>Continue to Declaration</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14m-7-7 7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section id="screen-4" class="screen">
+        <div class="screen-content">
+            <div class="form-header">
+                <div class="form-header-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 12l2 2 4-4"/>
+                        <path d="M12 2a10 10 0 1 0 10 10h-2a8 8 0 1 1-8-8V2z"/>
+                    </svg>
+                </div>
+                <h2 class="form-title" id="declaration-title">Visitor Declaration</h2>
+                <p class="form-subtitle">Please confirm your acceptance of the safety guidelines</p>
+            </div>
+
+            <div class="declaration-card">
+                <div class="declaration-text" id="declaration-text">
+                </div>
+
+                <label class="declaration-checkbox" id="declaration-checkbox-label">
+                    <input type="checkbox" id="accept-declaration-checkbox" onchange="onDeclarationCheckChange(this)">
+                    <span class="checkmark"></span>
+                    <span id="declaration-accept-label">I accept the safety guidelines and declaration</span>
+                </label>
+            </div>
+
+            <div class="screen-actions" style="margin-top: 24px;">
+                <button class="btn btn-secondary" onclick="stopNarration(); goToScreen(3)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5m7-7-7 7 7 7"/>
+                    </svg>
+                    <span>Back</span>
+                </button>
+                <button class="btn btn-primary" id="accept-declaration-btn" onclick="acceptDeclaration()" disabled>
+                    <span>Accept & Continue</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14m-7-7 7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section id="screen-5" class="screen">
+        <div class="screen-content">
+            <div class="form-header">
+                <div class="form-header-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                </div>
+                <h2 class="form-title" id="photo-title">Capture Your Photo</h2>
+                <p class="form-subtitle" id="photo-subtitle">A photo is required for your visitor pass</p>
+            </div>
+
+            <div class="camera-container">
+                <div class="camera-view" id="camera-view">
+                    <video id="camera-video" autoplay playsinline></video>
+                    <canvas id="photo-canvas" style="display:none;"></canvas>
+                    <div class="camera-placeholder" id="camera-placeholder">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                            <circle cx="12" cy="13" r="4"/>
                         </svg>
+                        <p>Camera will start automatically</p>
                     </div>
                 </div>
-
-                <h2 class="completion-title">Registration Complete</h2>
-                <p class="completion-subtitle">You have been successfully registered for the safety induction program</p>
-
-                <div class="completion-card">
-                    <div class="completion-detail">
-                        <span class="detail-label">Name</span>
-                        <span class="detail-value" id="completion-name">-</span>
-                    </div>
-                    <div class="completion-detail">
-                        <span class="detail-label">Registration ID</span>
-                        <span class="detail-value mono" id="completion-id">-</span>
-                    </div>
-                    <div class="completion-detail">
-                        <span class="detail-label">Language</span>
-                        <span class="detail-value" id="completion-lang">-</span>
-                    </div>
+                <div class="photo-preview hidden" id="photo-preview">
+                    <img id="captured-photo-img" alt="Captured photo">
                 </div>
+            </div>
 
-                <div class="screen-actions completion-actions">
-                    <button class="btn btn-primary btn-lg" onclick="startNew()">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                            <path d="M3 3v5h5"/>
+            <div class="screen-actions" style="margin-top: 24px;">
+                <button class="btn btn-secondary" id="retake-photo-btn" onclick="retakePhoto()" style="display:none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="1 4 1 10 7 10"/>
+                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                    </svg>
+                    <span id="retake-btn-text">Retake Photo</span>
+                </button>
+                <button class="btn btn-primary" id="capture-photo-btn" onclick="capturePhoto()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    <span id="capture-btn-text">Take Photo</span>
+                </button>
+                <button class="btn btn-primary" id="continue-to-pass-btn" onclick="goToPassScreen()" style="display:none;">
+                    <span>Continue to Pass</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14m-7-7 7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section id="screen-6" class="screen">
+        <div class="screen-content">
+            <div class="pass-container">
+                <div class="pass-card" id="pass-card">
+                    <div class="pass-header">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            <path d="M9 12l2 2 4-4"/>
                         </svg>
-                        <span>Register Another Person</span>
-                    </button>
+                        <span id="pass-title-text">Visitor Pass</span>
+                    </div>
+                    <div class="pass-body">
+                        <div class="pass-photo-area" id="pass-photo-area">
+                            <img id="pass-photo-img" alt="Visitor photo">
+                        </div>
+                        <div class="pass-details">
+                            <div class="pass-detail-row">
+                                <span class="pass-detail-label">Name</span>
+                                <span class="pass-detail-value" id="pass-name">-</span>
+                            </div>
+                            <div class="pass-detail-row">
+                                <span class="pass-detail-label">Registration ID</span>
+                                <span class="pass-detail-value mono" id="pass-reg-id">-</span>
+                            </div>
+                            <div class="pass-detail-row">
+                                <span class="pass-detail-label">Type</span>
+                                <span class="pass-detail-value" id="pass-visitor-type">-</span>
+                            </div>
+                            <div class="pass-detail-row">
+                                <span class="pass-detail-label">Language</span>
+                                <span class="pass-detail-value" id="pass-lang">-</span>
+                            </div>
+                            <div class="pass-detail-row">
+                                <span class="pass-detail-label">Date & Time</span>
+                                <span class="pass-detail-value" id="pass-datetime">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pass-footer">
+                        <div class="pass-qr-placeholder">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="7" height="7"/>
+                                <rect x="14" y="3" width="7" height="7"/>
+                                <rect x="14" y="14" width="7" height="7"/>
+                                <rect x="3" y="14" width="7" height="7"/>
+                                <line x1="6" y1="6" x2="6" y2="6.01"/>
+                                <line x1="6" y1="17" x2="6" y2="17.01"/>
+                                <line x1="17" y1="6" x2="17" y2="6.01"/>
+                                <line x1="17" y1="17" x2="17" y2="17.01"/>
+                            </svg>
+                            <span>#<span id="pass-qr-id">-</span></span>
+                        </div>
+                        <div class="pass-security-text">This pass must be visible at all times. Report lost passes immediately.</div>
+                    </div>
                 </div>
+            </div>
+
+            <div class="screen-actions" style="margin-top: 24px;">
+                <button class="btn btn-primary btn-lg" id="download-pass-btn" onclick="downloadPDF()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    <span id="download-pass-text">Download Pass</span>
+                </button>
+                <button class="btn btn-primary btn-lg" id="print-pass-btn" onclick="printPass()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 6 2 18 2 18 9"/>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                        <rect x="6" y="14" width="12" height="8"/>
+                    </svg>
+                    <span id="print-pass-text">Print Pass</span>
+                </button>
+                <button class="btn btn-secondary btn-lg" onclick="startNew()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                        <path d="M3 3v5h5"/>
+                    </svg>
+                    <span id="new-visitor-text">Register Another Visitor</span>
+                </button>
             </div>
         </div>
     </section>
